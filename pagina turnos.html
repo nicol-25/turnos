@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>MICROTURN - Sistema de Turnos</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Montserrat', sans-serif;
+      background: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQSLf-ywRJQR_MzTtgz2zwMh4JwCuiqlr5eEw&s') no-repeat center center fixed;
+      background-size: cover;
+      color: #000;
+      min-height: 100vh;
+      overflow-y: auto;
+    }
+
+    .container {
+      max-width: 950px;
+      margin: 30px auto;
+      background-color: rgba(255, 255, 255, 0.97);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+    }
+
+    h1 {
+      font-size: 3em;
+      text-align: center;
+      margin-bottom: 30px;
+      color: #111;
+      text-shadow: 1px 1px 1px #ccc;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .grid-1 {
+      margin-bottom: 20px;
+    }
+
+    .box {
+      background-color: #f8f9fa;
+      border: 2px solid #333;
+      padding: 20px;
+      font-size: 1.4em;
+      border-radius: 12px;
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .label {
+      font-weight: bold;
+      text-transform: uppercase;
+      font-size: 0.9em;
+      color: #555;
+    }
+
+    .formulario {
+      background-color: #fefefe;
+      border: 2px solid #000;
+      padding: 25px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: 2px 2px 10px rgba(0,0,0,0.15);
+    }
+
+    .formulario label {
+      font-size: 1.3em;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .formulario input {
+      width: 100%;
+      padding: 15px;
+      font-size: 1.1em;
+      border: 1px solid #aaa;
+      border-radius: 6px;
+      margin-bottom: 15px;
+    }
+
+    .button-group {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .formulario button,
+    .limpiar-btn {
+      flex: 1;
+      padding: 15px;
+      font-size: 1em;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    .formulario button {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .formulario button:hover {
+      background-color: #218838;
+    }
+
+    .limpiar-btn {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .limpiar-btn:hover {
+      background-color: #c82333;
+    }
+
+    .resultado {
+      background-color: #e7f9ed;
+      border: 2px solid #28a745;
+      padding: 20px;
+      border-radius: 12px;
+      font-size: 1.1em;
+      margin-bottom: 30px;
+    }
+
+    .resultado h2 {
+      margin-top: 0;
+      font-size: 1.6em;
+      color: #155724;
+      border-bottom: 1px dashed #999;
+      padding-bottom: 5px;
+    }
+
+    .accordion-item {
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      box-shadow: 1px 1px 6px rgba(0,0,0,0.1);
+    }
+
+    .accordion-header {
+      background-color: #d4edda;
+      padding: 15px 20px;
+      font-weight: bold;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .accordion-header::after {
+      content: '▼';
+      position: absolute;
+      right: 20px;
+      transition: transform 0.3s;
+    }
+
+    .accordion-header.open::after {
+      transform: rotate(-180deg);
+    }
+
+    .accordion-content {
+      padding: 15px 20px;
+      display: none;
+      background-color: #ffffff;
+    }
+
+    @media screen and (max-width: 768px) {
+      .container {
+        margin: 20px;
+      }
+
+      h1 {
+        font-size: 2em;
+      }
+
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>MICROTURN</h1>
+
+    <div class="grid-2">
+      <div class="box"><span class="label">Hornos Disponibles:</span> <span id="hornos">3</span></div>
+      <div class="box"><span class="label">Cantidad de Turnos:</span> <span id="totalTurnos">0</span></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="box"><span class="label">Calendario:</span> <span id="calendario">--/--/----</span></div>
+      <div class="box"><span class="label">Tiempo de Espera:</span> <span id="espera">0 min</span></div>
+    </div>
+
+    <div class="grid-1">
+      <div class="box"><span class="label">Turno Próximo:</span> <span id="proximo">N/A</span></div>
+    </div>
+
+    <div class="formulario">
+      <label for="nombre">Nombre:</label>
+      <input type="text" id="nombre" placeholder="Ingrese su nombre" required>
+      <div class="button-group">
+        <button id="btnGenerar">🎫 Generar Turno</button>
+        <button class="limpiar-btn" onclick="limpiarTurnos()">🗑 Limpiar Historial</button>
+      </div>
+    </div>
+
+    <div class="resultado" id="resultado" style="display:none;">
+      <h2>Historial de Turnos</h2>
+      <div id="turnoLista"></div>
+    </div>
+  </div>
+
+  <script>
+    let turnoActual = 0;
+    let hornoActual = 1;
+    const totalHornos = 3;
+    const minutosPorTurno = 4;
+
+    function actualizarFecha() {
+      const hoy = new Date();
+      document.getElementById('calendario').textContent = hoy.toLocaleDateString('es-ES');
+    }
+
+    function mostrarTurno(turno) {
+      const lista = document.getElementById('turnoLista');
+
+      const item = document.createElement('div');
+      item.className = 'accordion-item';
+
+      const header = document.createElement('div');
+      header.className = 'accordion-header';
+      header.textContent = `Turno #${turno.numero} - ${turno.nombre}`;
+      header.addEventListener('click', () => {
+        const open = content.style.display === 'block';
+        content.style.display = open ? 'none' : 'block';
+        header.classList.toggle('open', !open);
+      });
+
+      const content = document.createElement('div');
+      content.className = 'accordion-content';
+      content.innerHTML = `
+        <p><strong>Nombre:</strong> ${turno.nombre}</p>
+        <p><strong>Horno Asignado:</strong> Horno ${turno.horno}</p>
+        <p><strong>Número de Turno:</strong> ${turno.numero}</p>
+        <p><strong>Tiempo de Espera:</strong> ${turno.espera} minutos</p>
+      `;
+
+      item.appendChild(header);
+      item.appendChild(content);
+      lista.appendChild(item);
+    }
+
+    function guardarTurnoLocal(turno) {
+      const historial = JSON.parse(localStorage.getItem("historialTurnos")) || [];
+      historial.push(turno);
+      localStorage.setItem("historialTurnos", JSON.stringify(historial));
+    }
+
+    function cargarHistorial() {
+      const historial = JSON.parse(localStorage.getItem("historialTurnos")) || [];
+      historial.forEach(turno => mostrarTurno(turno));
+      if (historial.length > 0) {
+        document.getElementById('resultado').style.display = 'block';
+        turnoActual = historial[historial.length - 1].numero;
+        hornoActual = (historial[historial.length - 1].horno % totalHornos) + 1;
+        document.getElementById('totalTurnos').textContent = turnoActual;
+        document.getElementById('espera').textContent = `${(turnoActual - 1) * minutosPorTurno} min`;
+        document.getElementById('proximo').textContent = turnoActual + 1;
+      }
+    }
+
+    function limpiarTurnos() {
+      localStorage.removeItem("historialTurnos");
+      document.getElementById("turnoLista").innerHTML = "";
+      document.getElementById("resultado").style.display = "none";
+      turnoActual = 0;
+      hornoActual = 1;
+      document.getElementById("totalTurnos").textContent = "0";
+      document.getElementById("espera").textContent = "0 min";
+      document.getElementById("proximo").textContent = "N/A";
+    }
+
+    document.getElementById('btnGenerar').addEventListener('click', () => {
+      const nombre = document.getElementById('nombre').value.trim();
+      if (!nombre) return alert("Por favor, ingresa tu nombre.");
+
+      turnoActual++;
+      const hornoAsignado = hornoActual;
+      hornoActual = hornoActual % totalHornos + 1;
+      const tiempoDeEspera = (turnoActual - 1) * minutosPorTurno;
+
+      const nuevoTurno = {
+        nombre: nombre,
+        horno: hornoAsignado,
+        numero: turnoActual,
+        espera: tiempoDeEspera
+      };
+
+      mostrarTurno(nuevoTurno);
+      guardarTurnoLocal(nuevoTurno);
+
+      document.getElementById('resultado').style.display = 'block';
+      document.getElementById('totalTurnos').textContent = turnoActual;
+      document.getElementById('espera').textContent = `${tiempoDeEspera} min`;
+      document.getElementById('proximo').textContent = turnoActual + 1;
+      document.getElementById('nombre').value = '';
+    });
+
+    actualizarFecha();
+    cargarHistorial();
+  </script>
+</body>
+</html>
